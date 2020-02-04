@@ -3,6 +3,9 @@ library(ggplot2)
 library(grid)
 library(RColorBrewer)
 library(shinydashboard)
+# jane cowles ditmer February 2020
+# Shiny app to display main story from Cowles et al, 2016 GCB 
+# aka Biodiversity and Climate (BAC) experimental results
 
 #### UI!
 
@@ -45,11 +48,8 @@ column(4,align="center",
   fluidRow(
     column(3,
       h5("Here's why:",align="center"),
-      # textOutput("divcomment")),
     span(textOutput("divcomment"), style="color:grey"),
-      # br(),
     span(textOutput("warmingcomment"), style="color:black")),
-      # p("Biomass x warming = amelioration of negative impacts.")),
     column(4,align="center", imageOutput("image")),
     column(5,align="center", plotOutput("DryPlot"))
     ),
@@ -61,7 +61,6 @@ column(4,align="center",
       span(h6("Shiny app (c) JCD"),style="color:grey"),
 ),
     column(1,align="center",
-      # span(h6("(c) JCD 2020"),style="color:grey"),
       ),
     column(6,align="center",
     helpText(a("Click here for related peer reviewed paper!", href="https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.13111", target="_blank")),
@@ -70,13 +69,12 @@ column(4,align="center",
 br()),
     
     column(1,align="center",
-      # span(h6("(c) JCD 2020"),style="color:grey"),
       ),
     column(2,align="center",
     imageOutput("logo",height="50px")),
     ))
 )
-# Define server logic required to draw a histogram
+# Server!
 server <- function(input, output) {
 bac <- read.csv("data/BAC_df.csv")
   # bac <- data.frame(HeatNum=c(0,1,2),HeatOrd = c("Control","Low","High"),Diversity = c(1,4,16),Prductivity=c(4,6,9))
@@ -126,7 +124,7 @@ bac$HeatOrd <- factor(bac$HeatOrd,levels=c("Control","Low","High"))
       ))}
   }, deleteFile = FALSE)
     output$DryPlot <- renderPlot({
-      
+      # to make gradient in background.
       make_gradient <- function(deg = 45, n = 100, cols = blues9) {
   cols <- colorRampPalette(cols)(n + 1)
   rad <- deg / (180 / pi)
@@ -145,7 +143,6 @@ bac$HeatOrd <- factor(bac$HeatOrd,levels=c("Control","Low","High"))
         
 ggplot(bac[bac$HeatNum%in%input$checkGroup,],aes(Productivity,vpdgrowing2014.neg10,group=factor(HeatOrd,levels=c("Control","Low","High")),color=factor(HeatOrd,levels=c("Control","Low","High"))))+ annotation_custom(grob = g, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf)+annotate("rect", xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf, alpha=0.8, fill="white") +geom_point(shape=4,alpha=0.3) +geom_point(data=bacsub,aes(color=factor(HeatOrd,levels=c("Control","Low","High"))))+stat_ellipse(data=bacsub,aes(fill=factor(HeatOrd,levels=c("Control","Low","High"))),geom="polygon",alpha=0.1)+scale_color_manual(name="warming",values=c("royalblue","orange","firebrick"),drop=F)+scale_fill_manual(name="warming",values=c("royalblue","orange","firebrick"),drop=F)+theme_classic()+labs(x="Plant Biomass Production",y="\"Dryness\" (Vapor Pressure Deficit)")+coord_cartesian(xlim=c(0,1100),ylim=c(0,12))+theme(legend.position = "top",axis.title=element_text(size=14,face="bold"))
 
-
 },width=300)
     
  output$divcomment <- renderText({
@@ -155,6 +152,7 @@ if(input$picture==1){"- These low diversity communities have low biomass, as evi
  
     output$warmingcomment <- renderText({
 ifelse(input$picture==1&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...making the community more susceptible to drying caused by warming, which is bad for growth.",ifelse(input$picture==4&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This puts their response to warming somewhere between 1 species communities and 16 species communities.",ifelse(input$picture==16&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This canopy buffers the negative impacts of warming, while containing the largest growth potential.","- Click an additional warming treatment for more information!"))) }) 
+    
     output$summary <- renderText({
 ifelse(input$picture==1&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"Low diversity -> Low biomass -> exposed soil -> drying -> less growth",ifelse(input$picture==4&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"Medium diversity -> Decent plant cover -> Medium response (balance of positives and negatives ",ifelse(input$picture==16&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"High diversity -> High cover -> Limited drying & warm happy plants -> Biggest positive effect of warming"," ")))})
 
@@ -162,5 +160,5 @@ ifelse(input$picture==1&(is.element(2,input$checkGroup)|is.element(3,input$check
 
 }
 
-# Run the application 
+# Run!
 shinyApp(ui = ui, server = server)
