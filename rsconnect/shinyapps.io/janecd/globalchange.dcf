@@ -5,6 +5,6 @@ account: janecd
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1748674
-bundleId: 2774459
+bundleId: 2774564
 url: https://janecd.shinyapps.io/globalchange/
-when: 1580832034.38722
+when: 1580834084.85123
