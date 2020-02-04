@@ -6,7 +6,17 @@ library(RColorBrewer)
 #### UI!
 ui <- fluidPage(
 
-    titlePanel("How does warming impact productivity?"),
+    titlePanel(h1("How does warming impact productivity?",align="center")),
+  fluidRow(column(4,align="center",
+    tags$b("Response of interest:"),br(),
+    tags$u("Plant biomass production"),style='margin-bottom:30px;border-right:1px solid; padding: 10px;color:grey'),
+  column(4,align="center",
+    tags$b("Intervention:"),br(),
+    tags$u("Warming via heat lamps"),style='margin-bottom:30px;border-right:1px solid; padding: 10px;color:grey'),
+column(4,align="center",
+  tags$b("Existing gradient:"),br(),
+    tags$u("Plant species diversity"),style='margin-bottom:30px;border:0px solid; padding: 10px;color:grey')),
+  # h6("Response of interest: Plant biomass production  //  Intervention: Warming via heat lamps  //  Existing gradient: Plant species diversity"),
   fluidRow(column(3,
     h3("Treatment selection"),
       checkboxGroupInput("checkGroup", h5("Global change Treatment"),
@@ -15,22 +25,40 @@ ui <- fluidPage(
         choices = list("1 species"=1,"4 species"=4, "16 species"=16),selected = 1) ),
     column(9,plotOutput("distPlot"))),
   hr(),
+  h4("The result depends on the context (i.e. plant community).",align="center"),
   fluidRow(
     column(3,
-      h5("What are we looking at?"),
+      h5("Here's why:"),
       # textOutput("divcomment")),
     span(textOutput("divcomment"), style="color:grey"),
-      br(),
+      # br(),
     span(textOutput("warmingcomment"), style="color:black")),
       # p("Biomass x warming = amelioration of negative impacts.")),
     column(4, imageOutput("image")),
     column(5, plotOutput("DryPlot"))
     ),
+    # span(textOutput("summary"),style="color:firebrick",align="center"),
+
   hr(),
-  fluidRow(column(12,align="center",
-    helpText(a("Click here for related peer reviewed paper!", href="https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.13111",target="_blank")),
-        helpText(a("[See code on Github]", href="https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.13111",target="_blank"))
-))
+  fluidRow(column(2,align="center",
+    span(h6("NSF Funded Research at Cedar Creek Ecosystem Science Reserve"),style="color:black"),
+      span(h6("Shiny app (c) JCD"),style="color:grey"),
+),
+    column(1,align="center",
+      # span(h6("(c) JCD 2020"),style="color:grey"),
+      ),
+    column(6,align="center",
+    helpText(a("Click here for related peer reviewed paper!", href="https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.13111", target="_blank")),
+    h6("---"),
+        helpText(a("[See code on Github]", href="https://github.com/janecowles/GlobalChange/blob/master/app.R", target="_blank"))
+),
+    
+    column(1,align="center",
+      # span(h6("(c) JCD 2020"),style="color:grey"),
+      ),
+    column(2,align="center",
+    imageOutput("logo",height="50px")),
+    )
     )
 
 # Define server logic required to draw a histogram
@@ -45,6 +73,13 @@ bac$HeatOrd <- factor(bac$HeatOrd,levels=c("Control","Low","High"))
         }else
        ggplot(bac[bac$HeatNum%in%input$checkGroup,],aes(Diversity,Productivity,group=factor(HeatOrd,levels=c("Control","Low","High")),color=factor(HeatOrd,levels=c("Control","Low","High"))))+geom_rect(mapping=aes(xmin=inpic-1, xmax=inpic+1, ymin=-100, ymax=700), fill="gray80",color="grey", alpha=0.1)+geom_jitter(alpha=0.2,width=0.1)+geom_line(stat="summary",fun.y="mean",size=2)+scale_color_manual(name="warming",values=c("royalblue","orange","firebrick"),drop=F)+coord_cartesian(ylim=c(0,600),xlim=c(0,17))+theme_classic()+labs(x="Diversity (# of Species)",y="Plant Biomass Production") + theme(axis.title=element_text(size=14,face="bold"))
 },width=500)
+    output$logo <- renderImage({
+      return(list(
+        src = "images/cdr.jpg",
+        contentType = "image/jpeg",
+        alt = " "
+      ))
+    },deleteFile = FALSE)
           output$image <- renderImage({
     if (is.null(input$picture))
       return(NULL)
@@ -92,14 +127,17 @@ ggplot(bac[bac$HeatNum%in%input$checkGroup,],aes(Productivity,vpdgrowing2014.neg
 },width=300)
     
  output$divcomment <- renderText({
-if(input$picture==1){"Monocultures (1 species communities) have low biomass, as evidenced by the exposed soil in the picture..."
-}else if(input$picture==4){"These 4 species communities have more biomass than monocultures but less than the high diversity plots..."
-}else if(input$picture==16){"The highest diversity communities (16 species) have the highest levels of biomass (no ground can be seen in the picture), which creates its own microclimate below the canopy..."}})
+if(input$picture==1){"These low diversity communities have low biomass, as evidenced by the exposed soil in the picture..."
+}else if(input$picture==4){"These 4 species communities have more biomass than low diversity communities but less than the high diversity plots..."
+}else if(input$picture==16){"The highest diversity communities have the highest levels of biomass (no ground can be seen in the picture), which creates its own microclimate below the canopy..."}})
  
     output$warmingcomment <- renderText({
-ifelse(input$picture==1&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This makes the community more susceptible to drying caused by warming, which is bad for growth.",ifelse(input$picture==4&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This puts their response to warming somewhere between 1 species communities and 16 species communities.",ifelse(input$picture==16&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This canopy buffers the negative impacts of warming, while containing the largest growth potential.","Click a warming treatment for more information!")))
+ifelse(input$picture==1&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...making the community more susceptible to drying caused by warming, which is bad for growth.",ifelse(input$picture==4&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This puts their response to warming somewhere between 1 species communities and 16 species communities.",ifelse(input$picture==16&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"...This canopy buffers the negative impacts of warming, while containing the largest growth potential.","Click an additional warming treatment for more information!"))) }) 
+    output$summary <- renderText({
+ifelse(input$picture==1&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"Low diversity -> Low biomass -> exposed soil -> drying -> less growth",ifelse(input$picture==4&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"Medium diversity -> Decent plant cover -> Medium response (balance of positives and negatives ",ifelse(input$picture==16&(is.element(2,input$checkGroup)|is.element(3,input$checkGroup)),"High diversity -> High cover -> Limited drying & warm happy plants -> Biggest positive effect of warming"," ")))})
 
- }) 
+
+
 }
 
 # Run the application 
