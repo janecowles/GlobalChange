@@ -2,10 +2,23 @@ library(shiny)
 library(ggplot2)
 library(grid)
 library(RColorBrewer)
+library(shinydashboard)
 
 #### UI!
-ui <- fluidPage(
 
+
+ui <- dashboardBody(
+
+    tags$head(
+      tags$style(
+        "body{
+    min-height: 611px;
+    height: auto;
+    max-width: 800px;
+    margin: auto;
+        }"
+      )
+    ),fluidPage(
     titlePanel(h1("How does warming impact productivity?",align="center"),windowTitle = "Global Change"),
   fluidRow(column(4,align="center",
     tags$i("Intervention:"),br(),
@@ -61,9 +74,8 @@ br()),
       ),
     column(2,align="center",
     imageOutput("logo",height="50px")),
-    )
-    )
-
+    ))
+)
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 bac <- read.csv("data/BAC_df.csv")
